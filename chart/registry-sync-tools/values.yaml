@@ -1,0 +1,41 @@
+# Default values for registry-sync-tools.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry-sync-tools
+  tag: "1.0"
+  pullPolicy: IfNotPresent
+
+pvcRegistrySync:
+  storageSize: 10Gi
+  storageClassName: cephfs
+
+cronjob:
+  schedule: "0 0 * * *"
+  docker:
+    user: xxx
+    pass: xxx
+  args:
+    srcRegistry: xxx
+    dstRegistry: xxx
+    gitDomain: xxx
+    gitSshUrl: xxx
+
+configmap:
+  name: registry-sync-config
+  data:
+    registrySync:
+      registry:
+        id_rsa: |+
+
+nameOverride: ""
+fullnameOverride: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configmap.name }}
+data:
+  id_rsa: |+
+{{ .Values.configmap.data.registrySync.registry.id_rsa | indent 4 }}

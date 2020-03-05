@@ -1,0 +1,47 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  schedule: "{{ .Values.cronjob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: registry-sync
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+              - name: DOCKER_HOST
+                value: tcp://127.0.0.1:2375
+              - name: DOCKER_USER
+                value: {{ .Values.cronjob.docker.user }}
+              - name: DOCKER_PASS
+                value: {{ .Values.cronjob.docker.pass }}
+            args:
+            - /bin/bash
+            - /data/registry-sync-tools/registry_sync.sh
+            - /data/registry-sync-tools-workspace
+            - {{ .Values.cronjob.args.srcRegistry }}
+            - {{ .Values.cronjob.args.dstRegistry }}
+            - {{ .Values.cronjob.args.gitDomain }}
+            - {{ .Values.cronjob.args.gitSshUrl }}
+            volumeMounts:
+            - name: registry-sync-tools-workspace-volume
+              mountPath: /data/registry-sync-tools-workspace
+            - name: {{ include "registry-sync-tools.name" . }}-config
+              mountPath: /root/.ssh/id_rsa
+              subPath: id_rsa
+          volumes:
+            - name: registry-sync-tools-workspace-volume
+              persistentVolumeClaim:
+                claimName: pvc-registry-sync-tools
+            - name: {{ include "registry-sync-tools.name" . }}-config
+              configMap:
+                name: {{ .Values.configmap.name }}
+                items:
+                  - key: id_rsa
+                    path: id_rsa
+                    mode: 0600
+          restartPolicy: Never

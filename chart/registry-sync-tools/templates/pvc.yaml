@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-registry-sync-tools
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.pvcRegistrySync.storageSize }}
+  storageClassName: {{ .Values.pvcRegistrySync.storageClassName }}

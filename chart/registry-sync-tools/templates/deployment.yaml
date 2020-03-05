@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "registry-sync-tools.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "registry-sync-tools.name" . }}
+    helm.sh/chart: {{ include "registry-sync-tools.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "registry-sync-tools.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "registry-sync-tools.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: dockerd
+          image: "docker:stable-dind"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          args: ["--data-root=/data/docker", "--insecure-registry={{ .Values.cronjob.args.srcRegistry }}", "--insecure-registry={{ .Values.cronjob.args.dstRegistry }}"]
+          volumeMounts:
+          - name: dockerd-workspace-volume
+            mountPath: /data
+      volumes:
+        - name: dockerd-workspace-volume
+          persistentVolumeClaim:
+            claimName: pvc-registry-sync-tools
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
