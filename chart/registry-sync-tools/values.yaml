@@ -11,7 +11,7 @@ image:
 
 pvcRegistrySync:
   storageSize: 10Gi
-  storageClassName: cephfs
+  storageClassName: 
 
 cronjob:
   schedule: "0 0 * * *"
